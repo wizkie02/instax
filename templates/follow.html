@@ -1,0 +1,110 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex align-items-center bg-white">
+        <i class="bi bi-person-plus me-2 text-success"></i>
+        <h5 class="mb-0">Follow người dùng Instagram</h5>
+    </div>
+    <div class="card-body">
+        <form method="post" action="{{ url_for('follow_user') }}">
+            <div class="mb-4">
+                <label class="form-label fw-bold">Chọn cách thức follow</label>
+                <div class="d-flex gap-4 mt-2">
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="search_type" id="by_userid" value="userid" checked>
+                        <label class="form-check-label" for="by_userid">
+                            <i class="bi bi-fingerprint me-2"></i>Follow bằng User ID
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="radio" name="search_type" id="by_username" value="username">
+                        <label class="form-check-label" for="by_username">
+                            <i class="bi bi-at me-2"></i>Follow bằng Username
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-3" id="userid_input">
+                <label for="user_id" class="form-label fw-bold">User ID</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                    <input type="text" class="form-control" id="user_id" name="user_id"
+                           value="{{ request.args.get('user_id', '') }}"
+                           placeholder="Nhập User ID (VD: 173560420)">
+                </div>
+                <div class="form-text text-muted">Bạn có thể tìm User ID bằng chức năng tìm kiếm</div>
+            </div>
+
+            <div class="mb-3" id="username_input" style="display: none;">
+                <label for="username" class="form-label fw-bold">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-at"></i></span>
+                    <input type="text" class="form-control" id="username" name="username"
+                           placeholder="Nhập username (VD: cristiano)">
+                </div>
+            </div>
+
+            <!-- Đã bỏ ô tick xác nhận theo yêu cầu -->
+
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-success">
+                    <i class="bi bi-person-plus me-2"></i>Follow người dùng
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Xóa nội dung
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="card-footer bg-white">
+        <div class="alert alert-warning mb-0 border-start border-warning border-4">
+            <div class="d-flex">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div>
+                    <strong>Lưu ý:</strong> Instagram có thể giới hạn số lượng người theo dõi mới trong một khoảng thời gian nhất định.
+                    Sử dụng chức năng này một cách có trách nhiệm để tránh bị khóa tài khoản.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if logged_in == False %}
+<div class="card mt-3">
+    <div class="card-body text-center py-4">
+        <i class="bi bi-lock-fill text-secondary mb-3" style="font-size: 3rem;"></i>
+        <h5>Bạn cần đăng nhập để sử dụng tính năng này</h5>
+        <p class="text-muted">Vui lòng đăng nhập vào tài khoản Instagram của bạn để tiếp tục.</p>
+        <a href="{{ url_for('login') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập ngay
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchType = document.getElementsByName('search_type');
+    const useridInput = document.getElementById('userid_input');
+    const usernameInput = document.getElementById('username_input');
+
+    function toggleInputs() {
+        if (document.getElementById('by_userid').checked) {
+            useridInput.style.display = 'block';
+            usernameInput.style.display = 'none';
+            document.getElementById('username').value = '';
+        } else {
+            useridInput.style.display = 'none';
+            usernameInput.style.display = 'block';
+            document.getElementById('user_id').value = '';
+        }
+    }
+
+    searchType.forEach(radio => {
+        radio.addEventListener('change', toggleInputs);
+    });
+});
+</script>
+{% endblock %}

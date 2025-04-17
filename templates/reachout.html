@@ -1,0 +1,253 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-header d-flex align-items-center bg-white">
+        <i class="bi bi-rocket-takeoff me-2 text-primary"></i>
+        <h5 class="mb-0">Reach Out - Tiếp cận người dùng</h5>
+    </div>
+    <div class="card-body">
+        <div class="alert alert-info">
+            <div class="d-flex">
+                <i class="bi bi-info-circle-fill me-2 fs-4"></i>
+                <div>
+                    <p class="mb-0">Tính năng <strong>Reach Out</strong> sẽ thực hiện liên tiếp 3 bước:</p>
+                    <ol class="mb-0 mt-2">
+                        <li>Tìm kiếm người dùng bằng username</li>
+                        <li>Follow người dùng đó</li>
+                        <li>Gửi tin nhắn trực tiếp (DM) cho họ</li>
+                    </ol>
+                </div>
+            </div>
+        </div>
+
+        <form id="reachoutForm" method="post" action="{{ url_for('reachout') }}">
+            <div class="mb-3">
+                <label for="username" class="form-label fw-bold">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light"><i class="bi bi-at"></i></span>
+                    <input type="text" class="form-control" id="username" name="username"
+                           placeholder="Nhập username người dùng (VD: cristiano)" required>
+                </div>
+            </div>
+            
+            <div class="mb-3">
+                <label for="message" class="form-label fw-bold">Nội dung tin nhắn</label>
+                <textarea class="form-control" id="message" name="message" rows="5" required
+                          placeholder="Nhập nội dung tin nhắn muốn gửi"></textarea>
+            </div>
+            
+            <div class="d-grid gap-2">
+                <button type="submit" class="btn btn-primary">
+                    <i class="bi bi-rocket-takeoff me-2"></i>Tiếp cận người dùng
+                </button>
+                <button type="reset" class="btn btn-outline-secondary">
+                    <i class="bi bi-x-circle me-2"></i>Xóa nội dung
+                </button>
+            </div>
+        </form>
+    </div>
+    <div class="card-footer bg-white">
+        <div class="alert alert-warning mb-0 border-start border-warning border-4">
+            <div class="d-flex">
+                <i class="bi bi-exclamation-triangle-fill me-2 fs-4"></i>
+                <div>
+                    <strong>Lưu ý:</strong> Tính năng này thực hiện nhiều thao tác liên tiếp và có thể dễ bị Instagram giới hạn. 
+                    Sử dụng một cách có trách nhiệm và với tần suất hợp lý.
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="resultSection" style="display: none;" class="mt-4">
+    <div class="card">
+        <div class="card-header d-flex align-items-center bg-white">
+            <i class="bi bi-check-circle me-2 text-success"></i>
+            <h5 class="mb-0">Kết quả</h5>
+        </div>
+        <div class="card-body">
+            <div class="progress mb-4" style="height: 30px;">
+                <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+            </div>
+            
+            <div class="steps">
+                <div class="d-flex align-items-center mb-3">
+                    <div id="step1Icon" class="me-3">
+                        <i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Bước 1: Tìm kiếm người dùng</h6>
+                        <p id="step1Result" class="mb-0 text-muted small">Đang chờ...</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center mb-3">
+                    <div id="step2Icon" class="me-3">
+                        <i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Bước 2: Follow người dùng</h6>
+                        <p id="step2Result" class="mb-0 text-muted small">Đang chờ...</p>
+                    </div>
+                </div>
+                
+                <div class="d-flex align-items-center">
+                    <div id="step3Icon" class="me-3">
+                        <i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-0">Bước 3: Gửi tin nhắn</h6>
+                        <p id="step3Result" class="mb-0 text-muted small">Đang chờ...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="userInfoCard" class="mt-4" style="display: none;">
+                <h6 class="border-bottom pb-2 mb-3">Thông tin người dùng:</h6>
+                <div class="d-flex">
+                    <img id="userAvatar" src="" alt="Avatar" class="rounded-circle me-3" width="64" height="64">
+                    <div>
+                        <h5 id="userFullname"></h5>
+                        <p class="mb-1"><strong>Username:</strong> <span id="userUsername"></span></p>
+                        <p class="mb-1"><strong>User ID:</strong> <span id="userId"></span></p>
+                        <p class="mb-0"><strong>Followers:</strong> <span id="userFollowers"></span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if logged_in == False %}
+<div class="card mt-3">
+    <div class="card-body text-center py-4">
+        <i class="bi bi-lock-fill text-secondary mb-3" style="font-size: 3rem;"></i>
+        <h5>Bạn cần đăng nhập để sử dụng tính năng này</h5>
+        <p class="text-muted">Vui lòng đăng nhập vào tài khoản Instagram của bạn để tiếp tục.</p>
+        <a href="{{ url_for('login') }}" class="btn btn-primary">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập ngay
+        </a>
+    </div>
+</div>
+{% endif %}
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const reachoutForm = document.getElementById('reachoutForm');
+    const resultSection = document.getElementById('resultSection');
+    const progressBar = document.getElementById('progressBar');
+    
+    // Icon elements
+    const step1Icon = document.getElementById('step1Icon');
+    const step2Icon = document.getElementById('step2Icon');
+    const step3Icon = document.getElementById('step3Icon');
+    
+    // Result text elements
+    const step1Result = document.getElementById('step1Result');
+    const step2Result = document.getElementById('step2Result');
+    const step3Result = document.getElementById('step3Result');
+    
+    // User info elements
+    const userInfoCard = document.getElementById('userInfoCard');
+    const userAvatar = document.getElementById('userAvatar');
+    const userFullname = document.getElementById('userFullname');
+    const userUsername = document.getElementById('userUsername');
+    const userId = document.getElementById('userId');
+    const userFollowers = document.getElementById('userFollowers');
+    
+    reachoutForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Reset UI
+        resultSection.style.display = 'block';
+        progressBar.style.width = '0%';
+        userInfoCard.style.display = 'none';
+        
+        // Reset icons
+        step1Icon.innerHTML = '<i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>';
+        step2Icon.innerHTML = '<i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>';
+        step3Icon.innerHTML = '<i class="bi bi-hourglass text-muted" style="font-size: 1.5rem;"></i>';
+        
+        // Reset text
+        step1Result.textContent = 'Đang chờ...';
+        step2Result.textContent = 'Đang chờ...';
+        step3Result.textContent = 'Đang chờ...';
+        
+        const username = document.getElementById('username').value;
+        const message = document.getElementById('message').value;
+        
+        try {
+            // Cập nhật UI bước 1
+            step1Icon.innerHTML = '<i class="bi bi-arrow-repeat text-primary" style="font-size: 1.5rem;"></i>';
+            step1Result.textContent = 'Đang tìm kiếm người dùng...';
+            progressBar.style.width = '33%';
+            
+            // Gọi API
+            const response = await fetch('{{ url_for("api_reachout") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, message })
+            });
+            
+            const result = await response.json();
+            
+            // Cập nhật bước 1
+            if (result.steps.search) {
+                step1Icon.innerHTML = '<i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>';
+                step1Result.textContent = 'Đã tìm thấy người dùng ' + username;
+                
+                // Hiển thị thông tin người dùng
+                if (result.user_info) {
+                    userInfoCard.style.display = 'block';
+                    userAvatar.src = result.user_info.profile_pic_url;
+                    userFullname.textContent = result.user_info.full_name;
+                    userUsername.textContent = result.user_info.username;
+                    userId.textContent = result.user_info.user_id;
+                    userFollowers.textContent = result.user_info.follower_count;
+                }
+            } else {
+                step1Icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>';
+                step1Result.textContent = 'Không tìm thấy người dùng ' + username;
+                progressBar.classList.add('bg-danger');
+                return;
+            }
+            
+            // Cập nhật bước 2
+            step2Icon.innerHTML = result.steps.follow ? 
+                '<i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>' :
+                '<i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>';
+            step2Result.textContent = result.steps.follow ? 
+                'Đã follow người dùng thành công' : 
+                'Không thể follow người dùng (có thể bạn đã follow rồi)';
+            progressBar.style.width = '66%';
+            
+            // Cập nhật bước 3
+            step3Icon.innerHTML = result.steps.message ? 
+                '<i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>' :
+                '<i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>';
+            step3Result.textContent = result.steps.message ? 
+                'Đã gửi tin nhắn thành công' : 
+                'Không thể gửi tin nhắn';
+            progressBar.style.width = '100%';
+            
+            if (result.success) {
+                progressBar.classList.add('bg-success');
+            } else {
+                progressBar.classList.add('bg-warning');
+            }
+            
+        } catch (error) {
+            console.error('Error:', error);
+            progressBar.style.width = '100%';
+            progressBar.classList.add('bg-danger');
+            
+            step1Icon.innerHTML = '<i class="bi bi-x-circle-fill text-danger" style="font-size: 1.5rem;"></i>';
+            step1Result.textContent = 'Lỗi: ' + error.message;
+        }
+    });
+});
+</script>
+{% endblock %}

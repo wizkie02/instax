@@ -1,0 +1,5 @@
+instagram_session.json
+instagram_sessions/
+__pycache__/
+*.pyc
+.env

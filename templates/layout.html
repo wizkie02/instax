@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Automation Tool</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --ig-primary: #0095f6;
+            --ig-secondary: #8e8e8e;
+            --ig-background: #fafafa;
+            --ig-border: #dbdbdb;
+            --ig-font-base: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+        
+        body {
+            font-family: var(--ig-font-base);
+            background-color: var(--ig-background);
+            color: #262626;
+            padding-top: 60px;
+        }
+        
+        .navbar {
+            background-color: white;
+            border-bottom: 1px solid var(--ig-border);
+        }
+        
+        .ig-logo {
+            font-family: 'Instagram Sans', var(--ig-font-base);
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .card {
+            border-radius: 3px;
+            border-color: var(--ig-border);
+            margin-bottom: 20px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .btn-primary {
+            background-color: var(--ig-primary);
+            border-color: var(--ig-primary);
+        }
+        
+        .btn-primary:hover {
+            background-color: #0086e0;
+            border-color: #0086e0;
+        }
+        
+        .nav-link {
+            color: #262626;
+        }
+        
+        .nav-link:hover, .nav-link.active {
+            color: var(--ig-primary);
+        }
+        
+        .user-card {
+            border: 1px solid var(--ig-border);
+            border-radius: 3px;
+            padding: 20px;
+            margin-bottom: 20px;
+            background-color: white;
+        }
+        
+        .user-img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--ig-border);
+        }
+        
+        .form-control {
+            border-color: var(--ig-border);
+            border-radius: 3px;
+        }
+        
+        .form-control:focus {
+            border-color: #aaa;
+            box-shadow: none;
+        }
+        
+        .sidebar {
+            position: sticky;
+            top: 80px;
+        }
+        
+        footer {
+            color: var(--ig-secondary);
+            font-size: 12px;
+        }
+        
+        .ig-icon {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand ig-logo" href="{{ url_for('index') }}">
+                <i class="bi bi-instagram me-2"></i>InstaTool
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('index') }}">
+                            <i class="bi bi-house-door ig-icon"></i><span class="d-lg-none ms-2">Trang chủ</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('search') }}">
+                            <i class="bi bi-search ig-icon"></i><span class="d-lg-none ms-2">Tìm kiếm</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('follow_user') }}">
+                            <i class="bi bi-person-plus ig-icon"></i><span class="d-lg-none ms-2">Follow</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('send_message') }}">
+                            <i class="bi bi-chat ig-icon"></i><span class="d-lg-none ms-2">Gửi tin nhắn</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('reachout') }}">
+                            <i class="bi bi-rocket-takeoff ig-icon"></i><span class="d-lg-none ms-2">Reach Out</span>
+                        </a>
+                    </li>
+                    {% if logged_in %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="bi bi-box-arrow-right ig-icon"></i><span class="d-lg-none ms-2">Đăng xuất ({{ username }})</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('login') }}">
+                            <i class="bi bi-box-arrow-in-right ig-icon"></i><span class="d-lg-none ms-2">Đăng nhập</span>
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container py-4">
+        <div class="row">
+            <div class="col-md-8">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+            
+            <div class="col-md-4 d-none d-md-block">
+                <div class="sidebar">
+                    <div class="card">
+                        <div class="card-body">
+                            {% if logged_in %}
+                            <div class="d-flex align-items-center mb-3">
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 56px; height: 56px;">
+                                    <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
+                                </div>
+                                <div>
+                                    <p class="mb-0 fw-bold">{{ username }}</p>
+                                    <small class="text-muted">Đã đăng nhập</small>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Đăng xuất</a>
+                            </div>
+                            {% else %}
+                            <p class="fw-bold mb-3">Chưa đăng nhập</p>
+                            <div class="d-grid">
+                                <a href="{{ url_for('login') }}" class="btn btn-primary">Đăng nhập</a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h6 class="card-title">Tính năng</h6>
+                            <ul class="list-group list-group-flush">
+                                <li class="list-group-item bg-transparent border-bottom ps-0">
+                                    <a href="{{ url_for('search') }}" class="text-decoration-none text-dark">
+                                        <i class="bi bi-search me-2"></i>Tìm kiếm người dùng
+                                    </a>
+                                </li>
+                                <li class="list-group-item bg-transparent border-bottom ps-0">
+                                    <a href="{{ url_for('follow_user') }}" class="text-decoration-none text-dark">
+                                        <i class="bi bi-person-plus me-2"></i>Follow người dùng
+                                    </a>
+                                </li>
+                                <li class="list-group-item bg-transparent ps-0">
+                                    <a href="{{ url_for('send_message') }}" class="text-decoration-none text-dark">
+                                        <i class="bi bi-chat me-2"></i>Gửi tin nhắn
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="pt-4 my-md-5 pt-md-5 border-top">
+            <div class="row">
+                <div class="col-12 col-md text-center">
+                    <p class="mb-2">&copy; 2025 Instagram Automation Tool</p>
+                    <p class="mb-0 text-muted">Sử dụng thư viện instagrapi</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

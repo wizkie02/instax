@@ -1,0 +1,87 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<div class="card">
+    <div class="card-body text-center p-5">
+        <i class="bi bi-instagram mb-3" style="font-size: 4rem; color: #0095f6;"></i>
+        <h2 class="mb-3" style="font-family: 'Instagram Sans', sans-serif;">Instagram Automation Tool</h2>
+        <p class="lead mb-4">Công cụ tự động hóa tương tác với Instagram sử dụng thư viện instagrapi</p>
+        
+        {% if not logged_in %}
+        <div class="d-grid gap-2 col-md-6 mx-auto">
+            <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg">
+                <i class="bi bi-box-arrow-in-right me-2"></i>Đăng nhập
+            </a>
+        </div>
+        {% else %}
+        <div class="row mt-4 g-3">
+            <div class="col-md-4">
+                <div class="card h-100 border shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                            <i class="bi bi-search" style="font-size: 2rem; color: #0095f6;"></i>
+                        </div>
+                        <h5 class="card-title">Tìm kiếm người dùng</h5>
+                        <p class="card-text text-muted">Tìm kiếm thông tin người dùng Instagram dựa theo username.</p>
+                        <a href="{{ url_for('search') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-search me-2"></i>Tìm kiếm
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                            <i class="bi bi-person-plus" style="font-size: 2rem; color: #5cb85c;"></i>
+                        </div>
+                        <h5 class="card-title">Follow người dùng</h5>
+                        <p class="card-text text-muted">Theo dõi người dùng Instagram bằng username hoặc user ID.</p>
+                        <a href="{{ url_for('follow_user') }}" class="btn btn-outline-success">
+                            <i class="bi bi-person-plus me-2"></i>Follow
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-light d-flex align-items-center justify-content-center mx-auto mb-3" style="width: 70px; height: 70px;">
+                            <i class="bi bi-chat-dots" style="font-size: 2rem; color: #0095f6;"></i>
+                        </div>
+                        <h5 class="card-title">Gửi tin nhắn</h5>
+                        <p class="card-text text-muted">Gửi tin nhắn trực tiếp đến người dùng Instagram.</p>
+                        <a href="{{ url_for('send_message') }}" class="btn btn-outline-primary">
+                            <i class="bi bi-chat me-2"></i>Gửi tin nhắn
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+{% if logged_in %}
+<div class="card mt-4">
+    <div class="card-header d-flex align-items-center bg-white">
+        <i class="bi bi-info-circle me-2 text-primary"></i>
+        <h5 class="mb-0">Thông tin tài khoản</h5>
+    </div>
+    <div class="card-body">
+        <div class="d-flex align-items-center">
+            <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 64px; height: 64px;">
+                <i class="bi bi-person-circle" style="font-size: 2.5rem;"></i>
+            </div>
+            <div>
+                <h5 class="mb-1">{{ username }}</h5>
+                <p class="mb-0 text-success">
+                    <i class="bi bi-check-circle-fill me-1"></i>
+                    Đã đăng nhập thành công
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
