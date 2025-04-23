@@ -10,49 +10,102 @@ class InstagramClient:
         self.client = Client()
         self.session_file = "instagram_session.json"
         self.user_cache = {}  # Cache cho các user đã tìm kiếm
-        self.verification_code_queue = Queue()  # Queue để nhận mã xác thực từ UI
         self.verification_needed = False  # Flag để kiểm tra xem có đang cần mã xác thực không
+        self.last_challenge_data = None  # Lưu trữ thông tin về challenge gần nhất
         
     def login(self, username, password, verification_code=None):
         """Login to Instagram and save session"""
         try:
-            # Reset trạng thái xác thực
+            # Reset trạng thái xác thực và dữ liệu challenge
             self.verification_needed = False
+            self.last_challenge_data = None
             
-            # Nếu có mã xác thực, thử đăng nhập với mã đó
+            # Nếu có mã xác thực, sử dụng để hoàn thành challenge trước đó
             if verification_code:
-                self.verification_code_queue.put(verification_code)
+                if not hasattr(self.client, 'challenge_code'):
+                    return {"success": False, "verification_needed": False, "error": "No challenge to complete with this code"}
                 
-            # Định nghĩa callback để xử lý yêu cầu mã xác thực
-            def code_handler():
+                # Thử hoàn thành challenge với mã xác thực
+                try:
+                    self.client.challenge_code(verification_code)
+                    
+                    # Lưu session sau khi xác thực thành công
+                    self.save_session()
+                    print(f"Verified successfully and logged in as {username}")
+                    return {"success": True, "verification_needed": False}
+                except Exception as e:
+                    error_message = str(e)
+                    print(f"Verification failed: {error_message}")
+                    return {"success": False, "verification_needed": False, "error": f"Verification failed: {error_message}"}
+            
+            # Thử đăng nhập thông thường nếu không có mã xác thực
+            # Sử dụng hàm lambda để "bắt" yêu cầu 2FA nhưng không block
+            def non_blocking_code_handler():
                 self.verification_needed = True
-                if self.verification_code_queue.empty():
-                    # Nếu không có mã từ UI, trả về một mã không hợp lệ để báo lỗi
-                    return "000000"
-                return self.verification_code_queue.get(block=True, timeout=300)  # Đợi tối đa 5 phút
+                # Trả về mã không hợp lệ để báo hiệu cần xác thực
+                return "000000"
                 
-            # Đăng nhập với callback xử lý mã xác thực
-            self.client.login(username, password, verification_code=code_handler)
-            
-            # Nếu đăng nhập thành công, lưu session
-            self.save_session()
-            print(f"Logged in successfully as {username}")
-            return {"success": True, "verification_needed": False}
-            
+            try:
+                self.client.login(username, password, verification_code=non_blocking_code_handler)
+                
+                # Nếu đăng nhập thành công, lưu session
+                self.save_session()
+                print(f"Logged in successfully as {username}")
+                return {"success": True, "verification_needed": False}
+                
+            except Exception as e:
+                error_message = str(e)
+                print(f"Login attempt result: {error_message}")
+                
+                # Kiểm tra xem có phải lỗi do 2FA không
+                if self.verification_needed or "challenge_required" in error_message or "two-factor" in error_message.lower():
+                    self.verification_needed = True
+                    print("Verification is needed for this account")
+                    
+                    # Lưu tên người dùng và mật khẩu để sử dụng sau khi có mã xác thực
+                    self.last_challenge_data = {
+                        "username": username,
+                        "password": password
+                    }
+                    
+                    return {
+                        "success": False, 
+                        "verification_needed": True, 
+                        "error": "Verification code required"
+                    }
+                
+                return {"success": False, "verification_needed": False, "error": error_message}
+                
         except Exception as e:
             error_message = str(e)
             print(f"Login failed: {error_message}")
             
-            # Nếu cần mã xác thực, trả về thông báo cho UI
-            if self.verification_needed:
-                return {"success": False, "verification_needed": True, "error": "Verification code required"}
+            # Nếu cần mã xác thực, trả về thông báo cho API
+            if self.verification_needed or "challenge_required" in error_message or "two-factor" in error_message.lower():
+                self.verification_needed = True
+                
+                # Lưu tên người dùng và mật khẩu để sử dụng sau khi có mã xác thực
+                self.last_challenge_data = {
+                    "username": username,
+                    "password": password
+                }
+                
+                return {
+                    "success": False, 
+                    "verification_needed": True, 
+                    "error": "Verification code required"
+                }
             
             return {"success": False, "verification_needed": False, "error": error_message}
     
     def is_verification_needed(self):
         """Kiểm tra xem có đang cần mã xác thực không"""
         return self.verification_needed
-        
+    
+    def get_last_challenge_data(self):
+        """Lấy dữ liệu challenge gần nhất"""
+        return self.last_challenge_data
+    
     def submit_verification_code(self, code):
         """Gửi mã xác thực từ UI vào queue để xử lý"""
         if self.verification_needed:
